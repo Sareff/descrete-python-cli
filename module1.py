@@ -133,7 +133,17 @@ def readCommand(new):
 
   cmd = new.split()
   if cmd[0] == cmd[-1]:
-    return "Command should use arguments"
+    match cmd[0]:
+      case "help":
+        return """CLI usage page:\n1. Object creation\n- create-set: Creates a set with value that has to be in curly brackets;
+- create-subset: Creates a subset of existing set that you must point to with argument "-isinstanceof";
+- create-sortset: Creates a sorted set that must to have "-length" argument;
+- create-pair: Creates a simple pair with fixed value positions.
+2. Object interaction
+- I haven't implemented it yet :P"""
+
+      case _:
+        return "No such command, please visit \"help\" page."
 
   schematics = createSchema(new)
   name = schematics["name"]
