@@ -128,6 +128,17 @@ def createSchema(new):
                 "value": value}
   return schematic
 
+def showManual(command):
+  match command:
+    case "create-set":
+      return "Create-set command as it follows from name - creates the set.\nYou can specify certain set's options such as:\n-name=<name>\n-inf=<1, 0>\n"
+    case "create-subset":
+      return "Create-subset command creates the subset of certain set, that you must specify with \"-isinstanceof\" argument. Here is other options that you can specify in Subset creation:\n-name=<name>\n-inf=<1, 0>\n-isinstanceof=<Name of Parent-Set>\n"
+    case "create-sortset":
+      return "Create-sortset command creates the sorted set of objects with constant length that you must specify with \"-length\" argument. Other optional arguments that you can use:\n-name=<name>\n-length=<length of your sorted set>"
+    case "create-pair":
+      return "Create-pair command create the pair of two objects that sorted in order that you specified on creation. Optional arguments:\n-name=<name>"
+
 def readCommand(new):
   global ObjList
 
@@ -145,6 +156,9 @@ def readCommand(new):
       case _:
         return "No such command, please visit \"help\" page."
 
+  if cmd[0] == "help":
+    return showManual(cmd[1])
+
   schematics = createSchema(new)
   name = schematics["name"]
 
@@ -159,21 +173,6 @@ def readCommand(new):
       pass
     case _:
       return "No such command"
-
-'''
-  if command in acceptedCommands:
-
-    obj = new[-1]
-    params = new[1:-1]
-    name = params[0].split("=")[1]
-    inf = params[1].split("=")[1]
-    inf = True if inf == "true" else False
-    ObjList[name] = MathSet(name, inf, obj)
-  else:
-    return "No such command"
-'''
-#  return ObjList
-    
 
 if __name__ == "__main__":
 
