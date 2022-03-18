@@ -75,6 +75,7 @@ def createSchema(new):
   - parent: The parent value shows if object have origin or no;
   - length: Length used for sorted sets for identify the length of set.
   """
+  global ObjList
   new = new.split()
   command = new[0]
   value = new[-1]
@@ -111,8 +112,16 @@ def createSchema(new):
     matchInf = False
 
   if len(matchParent) < 1:
+    if command == "create-subset":
+      error = "Use -isinstaceof argument while creating subsets!"
+      return error
+
     matchParent = ""
   else:
+    if ((command == "create-subset") and (m := matchParent[0].split("=")[1]) not in ObjList):
+      error = f"There is no set with name {m}!" 
+      return error
+
     matchParent = matchParent[0].split("=")[1]
 
   if len(matchLength) < 1:
@@ -159,7 +168,12 @@ def readCommand(new):
   if cmd[0] == "help":
     return showManual(cmd[1])
 
-  schematics = createSchema(new)
+  # Checking if error occurs while parsing 
+  if type(e := createSchema(new)) is str:
+    return e 
+  else:
+    schematics = createSchema(new)
+
   name = schematics["name"]
 
   match schematics["command"]:
