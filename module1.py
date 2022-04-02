@@ -39,13 +39,13 @@ class MathSubset(MathSet):
     super(MathSubset, self).__init__(name, inf, inner)
 
 
-def findString(arr, name):
+def findString(arr: list, name: str) -> list:
   """
   This method allow us to find string in array even if this string have any other characters around.
   """
   return [s for s in arr if name in s]
 
-def generateName(pattern):
+def generateName(pattern: str) -> str:
   """
   This method will generate a name for object and store this name in global name heap to avoid duplication.
   """
@@ -53,6 +53,8 @@ def generateName(pattern):
   global nameIndex
   name = pattern + str(nameIndex)
   nameIndex += 1
+  print(nameIndex)
+  nameHeap.append(name)
   return name
 
 
@@ -65,7 +67,7 @@ def safeCast(value, toType, default=None):
   except (ValueError, TypeError):
     return default
 
-def createSchema(new):
+def createSchema(new: list) -> dict:
   """
   createSchema method is build to parse the commands and store data in schematic.
   Here is a reference of some fields that schematic constains:
@@ -87,7 +89,30 @@ def createSchema(new):
   matchParent = findString(new, "isinstanceof")
   matchLength = findString(new, "length")
 
-  #Making empty arguments to have default values.
+
+  # Checking if arguments is empty and other stuff for vaious situations
+
+  #Do we have parent of our object?
+  if len(matchParent) < 1:
+    if command == "create-subset":
+      error = "Use -isinstaceof argument while creating subsets!"
+      return error
+    matchParent = ""
+  else:
+    if ((command == "create-subset") and (m := matchParent[0].split("=")[1]) not in ObjList):
+      error = f"There is no set with name {m}!" 
+      return error
+    matchParent = matchParent[0].split("=")[1]
+
+  # Do we have infinite switch?
+  if len(matchInf) < 1:
+    matchInf = False
+  elif len(matchInf) > 1 and matchInf[0].split("=")[1] in ("1", "True", "true"):
+    matchInf = True
+  else:
+    matchInf = False
+
+  # Do we have a name for object?
   if len(matchName) < 1:
     match command:
       case "create-set":
@@ -100,35 +125,19 @@ def createSchema(new):
         namePattern = "SS"
       case _:
         namePattern = "Obj"
+    print("generating name...")
     matchName = generateName(namePattern)
   else:
     matchName = matchName[0].split("=")[1]
 
-  if len(matchInf) < 1:
-    matchInf = False
-  elif len(matchInf) > 1 and matchInf[0].split("=")[1] in ("1", "True", "true"):
-    matchInf = True
-  else:
-    matchInf = False
-
-  if len(matchParent) < 1:
-    if command == "create-subset":
-      error = "Use -isinstaceof argument while creating subsets!"
-      return error
-
-    matchParent = ""
-  else:
-    if ((command == "create-subset") and (m := matchParent[0].split("=")[1]) not in ObjList):
-      error = f"There is no set with name {m}!" 
-      return error
-
-    matchParent = matchParent[0].split("=")[1]
-
+  # Do we have a length of object?
   if len(matchLength) < 1:
     matchLength = ""
   else:
     matchLength = safeCast(matchLength[0].split("=")[1], int, "") 
   
+
+  # When everything is done - generate schematic!
   schematic =  {"command": command, 
                 "name": matchName,
                 "infinity": matchInf, 
@@ -137,7 +146,7 @@ def createSchema(new):
                 "value": value}
   return schematic
 
-def showManual(command):
+def showManual(command: str) -> str:
   match command:
     case "create-set":
       return "Create-set command as it follows from name - creates the set.\nYou can specify certain set's options such as:\n-name=<name>\n-inf=<1, 0>\n"
@@ -148,7 +157,7 @@ def showManual(command):
     case "create-pair":
       return "Create-pair command create the pair of two objects that sorted in order that you specified on creation. Optional arguments:\n-name=<name>"
 
-def readCommand(new):
+def readCommand(new: str) -> str | tuple[dict, dict]:
   global ObjList
 
   cmd = new.split()
@@ -162,6 +171,8 @@ def readCommand(new):
 2. Object interaction
 - I haven't implemented it yet :P"""
 
+      case "list" | "ls":
+        return ObjList
       case _:
         return "No such command, please visit \"help\" page."
 
@@ -169,10 +180,11 @@ def readCommand(new):
     return showManual(cmd[1])
 
   # Checking if error occurs while parsing 
-  if type(e := createSchema(new)) is str:
-    return e 
+  # 
+  if type(sch := createSchema(new)) is str:
+    return sch
   else:
-    schematics = createSchema(new)
+    schematics = sch
 
   name = schematics["name"]
 
