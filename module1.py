@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
+from typing import NewType
 
+Error = NewType('Error', str)
 
 class MathSet(object):
   """
@@ -45,17 +47,30 @@ def findString(arr: list, name: str) -> list:
   """
   return [s for s in arr if name in s]
 
-def generateName(pattern: str) -> str:
+def generateName(pattern: str) -> tuple[str, int]:
   """
   This method will generate a name for object and store this name in global name heap to avoid duplication.
   """
   global nameHeap
   global nameIndex
-  name = pattern + str(nameIndex)
-  nameIndex += 1
-  nameHeap.append(name)
-  return name
 
+  name = pattern + str(nameIndex)
+  check = checkName(name)
+
+  if isinstance(check, int):
+    nameIndex += 1
+    nameHeap.append(name)
+    return (name, 0)
+  else:
+    return (check, 1) 
+
+def checkName(name: str) -> int | Error:
+  global nameHeap
+
+  if (name in nameHeap):
+    return Error("This name is currently in use!")
+
+  return 0 
 
 def safeCast(value, toType, default=None):
   """
@@ -124,9 +139,20 @@ def createSchema(new: list) -> dict:
         namePattern = "SS"
       case _:
         namePattern = "Obj"
-    matchName = generateName(namePattern)
+    matchName, errorCode = generateName(namePattern)
+    print(f"Generated name is: {matchName}") 
+    # If error occurs, the error description will be in first argument of tuple that returns from
+    # generateName function, so we can return it to describe which problem occurs. 
+    if errorCode == 1:
+      return matchName
   else:
     matchName = matchName[0].split("=")[1]
+    print(f"Not generated name is: {matchName}") 
+    if isinstance((e := checkName(matchName)), str):
+      return e
+    else: 
+      global nameHeap
+      nameHeap.append(matchName)
 
   # Do we have a length of object?
   if len(matchLength) < 1:
@@ -199,7 +225,6 @@ def readCommand(new: str) -> str | tuple[dict, dict]:
       return "No such command"
 
 if __name__ == "__main__":
-
   ObjList = dict()
   nameHeap = []
   nameIndex = 0
