@@ -53,7 +53,6 @@ def generateName(pattern: str) -> str:
   global nameIndex
   name = pattern + str(nameIndex)
   nameIndex += 1
-  print(nameIndex)
   nameHeap.append(name)
   return name
 
@@ -125,7 +124,6 @@ def createSchema(new: list) -> dict:
         namePattern = "SS"
       case _:
         namePattern = "Obj"
-    print("generating name...")
     matchName = generateName(namePattern)
   else:
     matchName = matchName[0].split("=")[1]
